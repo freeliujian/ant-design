@@ -1,14 +1,21 @@
 import classNames from 'classnames';
-import addEventListener from 'rc-util/lib/Dom/addEventListener';
 import * as React from 'react';
 import Affix from '../affix';
 import type { ConfigConsumerProps } from '../config-provider';
 import { ConfigContext } from '../config-provider';
 import getScroll from '../_util/getScroll';
 import scrollTo from '../_util/scrollTo';
+import warning from '../_util/warning';
 import AnchorContext from './context';
+import type { AnchorLinkBaseProps } from './AnchorLink';
+import AnchorLink from './AnchorLink';
 
 import useStyle from './style';
+
+export interface AnchorLinkItemProps extends AnchorLinkBaseProps {
+  key: React.Key;
+  children?: AnchorLinkItemProps[];
+}
 
 export type AnchorContainer = HTMLElement | Window;
 
@@ -45,6 +52,9 @@ export interface AnchorProps {
   prefixCls?: string;
   className?: string;
   style?: React.CSSProperties;
+  /**
+   * @deprecated Please use `items` instead.
+   */
   children?: React.ReactNode;
   offsetTop?: number;
   bounds?: number;
@@ -61,6 +71,7 @@ export interface AnchorProps {
   targetOffset?: number;
   /** Listening event when scrolling change active link */
   onChange?: (currentActiveLink: string) => void;
+  items?: AnchorLinkItemProps[];
 }
 
 interface InternalAnchorProps extends AnchorProps {
@@ -85,7 +96,7 @@ export interface AntAnchor {
   activeLink: string | null;
   scrollTo: (link: string) => void;
   onClick?: (
-    e: React.MouseEvent<HTMLElement>,
+    e: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
     link: { title: React.ReactNode; href: string },
   ) => void;
 }
@@ -100,6 +111,7 @@ const AnchorContent: React.FC<InternalAnchorProps> = (props) => {
     affix = true,
     showInkInFixed = false,
     children,
+    items,
     bounds,
     targetOffset,
     onClick,
@@ -107,6 +119,11 @@ const AnchorContent: React.FC<InternalAnchorProps> = (props) => {
     getContainer,
     getCurrentAnchor,
   } = props;
+
+  // =================== Warning =====================
+  if (process.env.NODE_ENV !== 'production') {
+    warning(!children, 'Anchor', '`Anchor children` is deprecated. Please use `items` instead.');
+  }
 
   const [links, setLinks] = React.useState<string[]>([]);
   const [activeLink, setActiveLink] = React.useState<string | null>(null);
@@ -257,23 +274,32 @@ const AnchorContent: React.FC<InternalAnchorProps> = (props) => {
     ...style,
   };
 
+  const createNestedLink = (options?: AnchorLinkItemProps[]) =>
+    Array.isArray(options)
+      ? options.map((item) => (
+          <AnchorLink {...item} key={item.key}>
+            {createNestedLink(item.children)}
+          </AnchorLink>
+        ))
+      : null;
+
   const anchorContent = (
     <div ref={wrapperRef} className={wrapperClass} style={wrapperStyle}>
       <div className={anchorClass}>
         <div className={`${prefixCls}-ink`}>
           <span className={inkClass} ref={spanLinkNode} />
         </div>
-        {children}
+        {'items' in props ? createNestedLink(items) : children}
       </div>
     </div>
   );
 
   React.useEffect(() => {
     const scrollContainer = getCurrentContainer();
-    const scrollEvent = addEventListener(scrollContainer, 'scroll', handleScroll);
     handleScroll();
+    scrollContainer?.addEventListener('scroll', handleScroll);
     return () => {
-      scrollEvent?.remove();
+      scrollContainer?.removeEventListener('scroll', handleScroll);
     };
   }, [dependencyListItem]);
 
@@ -322,5 +348,9 @@ const Anchor: React.FC<AnchorProps> = (props) => {
     <AnchorContent {...props} rootClassName={hashId} anchorPrefixCls={anchorPrefixCls} />,
   );
 };
+
+if (process.env.NODE_ENV !== 'production') {
+  Anchor.displayName = 'Anchor';
+}
 
 export default Anchor;

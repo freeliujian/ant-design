@@ -44,7 +44,7 @@ Select component to select value from options.
 
 ## API
 
-```jsx
+```tsx
 <Select>
   <Option value="lucy">lucy</Option>
 </Select>
@@ -149,7 +149,7 @@ You can control it by `open` prop: [codesandbox](https://codesandbox.io/s/ji-ben
 
 Select will close when it lose focus. You can prevent event to handle this:
 
-```jsx
+```tsx
 <Select
   dropdownRender={() => (
     <div
@@ -168,7 +168,7 @@ Select will close when it lose focus. You can prevent event to handle this:
 
 Virtual scroll internal set item height as `24px`. You need to adjust `listItemHeight` when your option height is less and `listHeight` config list container height:
 
-```jsx
+```tsx
 <Select listItemHeight={10} listHeight={250} />
 ```
 
@@ -177,3 +177,5 @@ Note: `listItemHeight` and `listHeight` are internal props. Please only modify w
 ### Why a11y test report missing `aria-` props?
 
 Select only create a11y auxiliary node when operating on. Please open Select and retry. For `aria-label` & `aria-labelledby` miss warning, please add related prop to Select with your own requirement.
+
+Default virtual scrolling will create a mock element to simulate an accessible binding. If a screen reader needs to fully access the entire list, you can set `virtual={false}` to disable virtual scrolling and the accessibility option will be bound to the actual element.

@@ -1,3 +1,4 @@
+import { ConfigProvider } from 'antd';
 import React from 'react';
 import type { TableProps } from '..';
 import Table from '..';
@@ -352,5 +353,22 @@ describe('Table', () => {
     );
 
     expect(container.querySelector('thead th')).toMatchSnapshot();
+  });
+
+  // https://github.com/react-component/table/pull/855
+  it('support aria-* and data-*', async () => {
+    const { container } = render(<Table aria-label="label" data-number="123" />);
+    expect(container.querySelector('table')?.getAttribute('aria-label')).toBe('label');
+    expect(container.querySelector('.ant-table')?.getAttribute('data-number')).toBe('123');
+  });
+
+  it('support wireframe', () => {
+    const columns = [{ title: 'Name', key: 'name', dataIndex: 'name' }];
+    const { container } = render(
+      <ConfigProvider theme={{ token: { wireframe: true } }}>
+        <Table columns={columns} />
+      </ConfigProvider>,
+    );
+    expect(container.firstChild).toMatchSnapshot();
   });
 });

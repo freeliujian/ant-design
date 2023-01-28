@@ -41,6 +41,7 @@ export interface SeedToken extends PresetColorType {
 
   /**
    * @nameZH 信息色
+   * @nameEN Info Color
    * @desc 用于表示操作信息的 Token 序列，如 Alert 、Tag、 Progress 等组件都有用到该组梯度变量。
    * @descEN Used to represent the operation information of the Token sequence, such as Alert, Tag, Progress, and other components use these map tokens.
    */
@@ -73,6 +74,7 @@ export interface SeedToken extends PresetColorType {
 
   /**
    * @nameZH 默认字号
+   * @nameEN Default Font Size
    * @desc 设计系统中使用最广泛的字体大小，文本梯度也将基于该字号进行派生。
    * @default 14
    */
@@ -128,7 +130,6 @@ export interface SeedToken extends PresetColorType {
 
   /**
    * @nameZH 组件箭头尺寸
-   * @internal
    */
   sizePopupArrow: number;
 
@@ -167,7 +168,6 @@ export interface SeedToken extends PresetColorType {
   /**
    * @nameZH 图片不透明度
    * @nameEN Define default Image opacity. Useful when in dark-like theme
-   * @internal
    */
   opacityImage: number;
 
@@ -185,54 +185,30 @@ export interface SeedToken extends PresetColorType {
 
   /**
    * @nameZH 动画基础时长
-   * @internal
    */
   motionBase: number;
 
-  /**
-   * @internal
-   */
   motionEaseOutCirc: string;
 
-  /**
-   * @internal
-   */
   motionEaseInOutCirc: string;
 
-  /**
-   * @internal
-   */
   motionEaseInOut: string;
 
-  /**
-   * @internal
-   */
   motionEaseOutBack: string;
 
-  /**
-   * @internal
-   */
   motionEaseInBack: string;
 
-  /**
-   * @internal
-   */
   motionEaseInQuint: string;
 
-  /**
-   * @internal
-   */
   motionEaseOutQuint: string;
 
-  /**
-   * @internal
-   */
   motionEaseOut: string;
 
   //  ----------   Style   ---------- //
 
   /**
-   * @nameZH 线框化
+   * @nameZH 线框风格
+   * @nameEN Wireframe Style
    * @desc 用于将组件的视觉效果变为线框化，如果需要使用 V4 的效果，需要开启配置项
    * @default false
    */

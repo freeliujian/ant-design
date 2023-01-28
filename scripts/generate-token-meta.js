@@ -3,7 +3,10 @@ const fs = require('fs-extra');
 
 const getTokenList = (list, source) =>
   list
-    .filter((item) => !item.comment?.blockTags.some((tag) => tag.tag === '@internal'))
+    .filter(
+      (item) =>
+        !item.comment?.blockTags.some((tag) => tag.tag === '@internal' || tag.tag === '@private'),
+    )
     .map((item) => ({
       source,
       token: item.name,
@@ -11,19 +14,19 @@ const getTokenList = (list, source) =>
       desc:
         item.comment?.blockTags
           ?.find((tag) => tag.tag === '@desc')
-          ?.content.reduce((result, str) => result.concat(str.text), '') || '-',
+          ?.content.reduce((result, str) => result.concat(str.text), '') || '',
       descEn:
         item.comment?.blockTags
           ?.find((tag) => tag.tag === '@descEN')
-          ?.content.reduce((result, str) => result.concat(str.text), '') || '-',
+          ?.content.reduce((result, str) => result.concat(str.text), '') || '',
       name:
         item.comment?.blockTags
           ?.find((tag) => tag.tag === '@nameZH')
-          ?.content.reduce((result, str) => result.concat(str.text), '') || '-',
+          ?.content.reduce((result, str) => result.concat(str.text), '') || '',
       nameEn:
         item.comment?.blockTags
           ?.find((tag) => tag.tag === '@nameEN')
-          ?.content.reduce((result, str) => result.concat(str.text), '') || '-',
+          ?.content.reduce((result, str) => result.concat(str.text), '') || '',
     }));
 
 function main() {

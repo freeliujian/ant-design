@@ -1,5 +1,4 @@
 import * as React from 'react';
-import classNames from 'classnames';
 import { FormattedMessage, Link, useFullSidebarData, useLocation } from 'dumi';
 import type { MenuProps } from 'antd';
 import { Menu } from 'antd';
@@ -206,7 +205,13 @@ export default ({
     blogList.length
       ? {
           label: (
-            <Link to={utils.getLocalizedPathname(blogList[0].link, isZhCN, search)}>
+            <Link
+              to={utils.getLocalizedPathname(
+                blogList.sort((a, b) => (a.frontmatter.date > b.frontmatter.date ? -1 : 1))[0].link,
+                isZhCN,
+                search,
+              )}
+            >
               {locale.blog}
             </Link>
           ),
@@ -261,12 +266,12 @@ export default ({
 
   return (
     <Menu
-      className={classNames('menu-site')}
       mode={menuMode}
       selectedKeys={[activeMenuItem]}
       css={style.nav}
       disabledOverflow
       items={items}
+      style={{ borderRight: 0 }}
     />
   );
 };

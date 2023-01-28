@@ -133,7 +133,7 @@ const genBaseStyle: GenerateStyle<SelectToken> = (token) => {
       display: 'inline-block',
       cursor: 'pointer',
 
-      [`&:not(&-customize-input) ${componentCls}-selector`]: {
+      [`&:not(${componentCls}-customize-input) ${componentCls}-selector`]: {
         ...genSelectorStyle(token),
         ...getSearchInputWithoutBorderStyle(token),
       },
@@ -166,7 +166,7 @@ const genBaseStyle: GenerateStyle<SelectToken> = (token) => {
         insetInlineEnd: inputPaddingHorizontalBase,
         height: token.fontSizeIcon,
         marginTop: -token.fontSizeIcon / 2,
-        color: token.colorTextDisabled,
+        color: token.colorTextQuaternary,
         fontSize: token.fontSizeIcon,
         lineHeight: 1,
         textAlign: 'center',
@@ -207,7 +207,7 @@ const genBaseStyle: GenerateStyle<SelectToken> = (token) => {
         width: token.fontSizeIcon,
         height: token.fontSizeIcon,
         marginTop: -token.fontSizeIcon / 2,
-        color: token.colorTextDisabled,
+        color: token.colorTextQuaternary,
         fontSize: token.fontSizeIcon,
         fontStyle: 'normal',
         lineHeight: 1,
@@ -224,7 +224,7 @@ const genBaseStyle: GenerateStyle<SelectToken> = (token) => {
         },
 
         '&:hover': {
-          color: token.colorTextDescription,
+          color: token.colorTextTertiary,
         },
       },
 
@@ -259,16 +259,9 @@ const genSelectStyle: GenerateStyle<SelectToken> = (token) => {
         },
 
         // ==================== In Form ====================
-        '&&-in-form-item': {
+        [`&${componentCls}-in-form-item`]: {
           width: '100%',
         },
-        // Space.Compact
-        ...genCompactItemStyle(
-          token,
-          componentCls,
-          `${componentCls}-selector`,
-          `${componentCls}-focused`,
-        ),
       },
     },
 
@@ -322,6 +315,13 @@ const genSelectStyle: GenerateStyle<SelectToken> = (token) => {
       }),
       true,
     ),
+    // =====================================================
+    // ==             Space Compact                       ==
+    // =====================================================
+    genCompactItemStyle(token, {
+      borderElCls: `${componentCls}-selector`,
+      focusElCls: `${componentCls}-focused`,
+    }),
   ];
 };
 
@@ -331,7 +331,7 @@ export default genComponentStyleHook(
   (token, { rootPrefixCls }) => {
     const selectToken: SelectToken = mergeToken<SelectToken>(token, {
       rootPrefixCls,
-      inputPaddingHorizontalBase: token.controlPaddingHorizontal - 1,
+      inputPaddingHorizontalBase: token.paddingSM - 1,
     });
 
     return [genSelectStyle(selectToken)];

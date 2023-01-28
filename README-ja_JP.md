@@ -79,6 +79,7 @@ yarn add antd
 ## 🔨 使い方
 
 ```jsx
+import React from 'react';
 import { Button, DatePicker } from 'antd';
 
 const App = () => (
@@ -105,6 +106,7 @@ const App = () => (
 - [変更ログ](CHANGELOG.en-US.md)
 - [rc-components](http://react-component.github.io/)
 - [Mobile UI](http://mobile.ant.design)
+- [Mini Program UI](http://mini.ant.design)
 - [Ant Design Pro コンポーネント](https://procomponents.ant.design)
 - [Ant Design チャート](https://charts.ant.design)
 - [Ant Design アイコン](https://github.com/ant-design/ant-design-icons)

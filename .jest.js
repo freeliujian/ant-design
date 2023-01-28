@@ -4,6 +4,7 @@ const compileModules = [
   'react-dnd-html5-backend',
   '@react-dnd',
   'dnd-core',
+  'react-sticky-box',
   'tween-one',
   '@babel',
   '@ant-design',
@@ -25,7 +26,7 @@ const transformIgnorePatterns = [
 ];
 
 function getTestRegex(libDir) {
-  if (libDir === 'dist') {
+  if (['dist', 'lib', 'es'].includes(libDir)) {
     return 'demo\\.test\\.(j|t)s$';
   }
   return '.*\\.test\\.(j|t)sx?$';
@@ -34,7 +35,7 @@ function getTestRegex(libDir) {
 module.exports = {
   verbose: true,
   testEnvironment: 'jsdom',
-  setupFiles: ['./tests/setup.js'],
+  setupFiles: ['./tests/setup.js', 'jest-canvas-mock'],
   setupFilesAfterEnv: ['./tests/setupAfterEnv.ts'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'md'],
   modulePathIgnorePatterns: ['/_site/'],
@@ -72,4 +73,5 @@ module.exports = {
     url: 'http://localhost',
   },
   // bail: true,
+  maxWorkers: '50%',
 };

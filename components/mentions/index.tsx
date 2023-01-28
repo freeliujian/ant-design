@@ -9,12 +9,13 @@ import { composeRef } from 'rc-util/lib/ref';
 // eslint-disable-next-line import/no-named-as-default
 import * as React from 'react';
 import { ConfigContext } from '../config-provider';
-import defaultRenderEmpty from '../config-provider/defaultRenderEmpty';
+import DefaultRenderEmpty from '../config-provider/defaultRenderEmpty';
 import { FormItemInputContext } from '../form/context';
 import genPurePanel from '../_util/PurePanel';
 import Spin from '../spin';
 import type { InputStatus } from '../_util/statusUtils';
 import { getMergedStatus, getStatusClassNames } from '../_util/statusUtils';
+import warning from '../_util/warning';
 
 import useStyle from './style';
 
@@ -26,9 +27,7 @@ function loadingFilterOption() {
 
 export type MentionPlacement = 'top' | 'bottom';
 
-export type {
-  DataDrivenOptionProps as MentionsOptionProps,
-} from 'rc-mentions/lib/Mentions';
+export type { DataDrivenOptionProps as MentionsOptionProps } from 'rc-mentions/lib/Mentions';
 
 export interface OptionProps {
   value: string;
@@ -86,6 +85,16 @@ const InternalMentions: React.ForwardRefRenderFunction<MentionsRef, MentionProps
   const [focused, setFocused] = React.useState(false);
   const innerRef = React.useRef<MentionsRef>();
   const mergedRef = composeRef(ref, innerRef);
+
+  // =================== Warning =====================
+  if (process.env.NODE_ENV !== 'production') {
+    warning(
+      !children,
+      'Mentions',
+      '`Mentions.Option` is deprecated. Please use `options` instead.',
+    );
+  }
+
   const { getPrefixCls, renderEmpty, direction } = React.useContext(ConfigContext);
   const {
     status: contextStatus,
@@ -109,13 +118,12 @@ const InternalMentions: React.ForwardRefRenderFunction<MentionsRef, MentionProps
     setFocused(false);
   };
 
-  const getNotFoundContent = () => {
+  const notFoundContentEle = React.useMemo<React.ReactNode>(() => {
     if (notFoundContent !== undefined) {
       return notFoundContent;
     }
-
-    return (renderEmpty || defaultRenderEmpty)('Select');
-  };
+    return renderEmpty?.('Select') || <DefaultRenderEmpty componentName="Select" />;
+  }, [notFoundContent, renderEmpty]);
 
   const getOptions = () => {
     if (loading) {
@@ -139,12 +147,7 @@ const InternalMentions: React.ForwardRefRenderFunction<MentionsRef, MentionProps
       ]
     : options;
 
-  const getFilterOption = (): any => {
-    if (loading) {
-      return loadingFilterOption;
-    }
-    return filterOption;
-  };
+  const mentionsfilterOption = loading ? loadingFilterOption : filterOption;
 
   const prefixCls = getPrefixCls('mentions', customizePrefixCls);
 
@@ -165,12 +168,12 @@ const InternalMentions: React.ForwardRefRenderFunction<MentionsRef, MentionProps
   const mentions = (
     <RcMentions
       prefixCls={prefixCls}
-      notFoundContent={getNotFoundContent()}
+      notFoundContent={notFoundContentEle}
       className={mergedClassName}
       disabled={disabled}
       direction={direction}
       {...restProps}
-      filterOption={getFilterOption()}
+      filterOption={mentionsfilterOption}
       onFocus={onFocus}
       onBlur={onBlur}
       dropdownClassName={classNames(popupClassName, hashId)}
