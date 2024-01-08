@@ -1,14 +1,14 @@
 import type { CSSObject } from '@ant-design/cssinjs';
 import type { FullToken, GenerateStyle } from '../../theme/internal';
-import { genComponentStyleHook, mergeToken } from '../../theme/internal';
+import { genStyleHooks, mergeToken } from '../../theme/internal';
 
 /** Component only token. Which will handle additional calculation of alias token */
 export interface ComponentToken {}
 
 interface EmptyToken extends FullToken<'Empty'> {
   emptyImgCls: string;
-  emptyImgHeight: number;
-  emptyImgHeightSM: number;
+  emptyImgHeight: number | string;
+  emptyImgHeightSM: number | string;
   emptyImgHeightMD: number;
 }
 
@@ -34,9 +34,14 @@ const genSharedEmptyStyle: GenerateStyle<EmptyToken> = (token): CSSObject => {
         },
 
         svg: {
+          maxWidth: '100%',
           height: '100%',
           margin: 'auto',
         },
+      },
+
+      [`${componentCls}-description`]: {
+        color: token.colorText,
       },
 
       // 原来 &-footer 没有父子结构，现在为了外层承担我们的hashId，改成父子结果
@@ -47,6 +52,10 @@ const genSharedEmptyStyle: GenerateStyle<EmptyToken> = (token): CSSObject => {
       '&-normal': {
         marginBlock: marginXL,
         color: token.colorTextDisabled,
+
+        [`${componentCls}-description`]: {
+          color: token.colorTextDisabled,
+        },
 
         [`${componentCls}-image`]: {
           height: token.emptyImgHeightMD,
@@ -66,14 +75,14 @@ const genSharedEmptyStyle: GenerateStyle<EmptyToken> = (token): CSSObject => {
 };
 
 // ============================== Export ==============================
-export default genComponentStyleHook('Empty', (token) => {
-  const { componentCls, controlHeightLG } = token;
+export default genStyleHooks('Empty', (token) => {
+  const { componentCls, controlHeightLG, calc } = token;
 
   const emptyToken: EmptyToken = mergeToken<EmptyToken>(token, {
     emptyImgCls: `${componentCls}-img`,
-    emptyImgHeight: controlHeightLG * 2.5,
+    emptyImgHeight: calc(controlHeightLG).mul(2.5).equal(),
     emptyImgHeightMD: controlHeightLG,
-    emptyImgHeightSM: controlHeightLG * 0.875,
+    emptyImgHeightSM: calc(controlHeightLG).mul(0.875).equal(),
   });
 
   return [genSharedEmptyStyle(emptyToken)];

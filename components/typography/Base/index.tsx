@@ -1,3 +1,4 @@
+import * as React from 'react';
 import CheckOutlined from '@ant-design/icons/CheckOutlined';
 import CopyOutlined from '@ant-design/icons/CopyOutlined';
 import EditOutlined from '@ant-design/icons/EditOutlined';
@@ -10,11 +11,11 @@ import useIsomorphicLayoutEffect from 'rc-util/lib/hooks/useLayoutEffect';
 import useMergedState from 'rc-util/lib/hooks/useMergedState';
 import omit from 'rc-util/lib/omit';
 import { composeRef } from 'rc-util/lib/ref';
-import * as React from 'react';
-import { ConfigContext } from '../../config-provider';
-import { useLocaleReceiver } from '../../locale/LocaleReceiver';
-import TransButton from '../../_util/transButton';
+
 import { isStyleSupport } from '../../_util/styleChecker';
+import TransButton from '../../_util/transButton';
+import { ConfigContext } from '../../config-provider';
+import useLocale from '../../locale/useLocale';
 import type { TooltipProps } from '../../tooltip';
 import Tooltip from '../../tooltip';
 import Editable from '../Editable';
@@ -135,7 +136,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
     ...restProps
   } = props;
   const { getPrefixCls, direction } = React.useContext(ConfigContext);
-  const textLocale = useLocaleReceiver('Text')[0]!; // Force TS get this
+  const [textLocale] = useLocale('Text');
 
   const typographyRef = React.useRef<HTMLElement>(null);
   const editIconRef = React.useRef<HTMLDivElement>(null);
@@ -193,7 +194,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
   // ========================== Copyable ==========================
   const [enableCopy, copyConfig] = useMergedConfig<CopyConfig>(copyable);
   const [copied, setCopied] = React.useState(false);
-  const copyIdRef = React.useRef<number>();
+  const copyIdRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const copyOptions: Pick<CopyConfig, 'format'> = {};
   if (copyConfig.format) {
@@ -201,7 +202,9 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
   }
 
   const cleanCopyId = () => {
-    window.clearTimeout(copyIdRef.current!);
+    if (copyIdRef.current) {
+      clearTimeout(copyIdRef.current);
+    }
   };
 
   const onCopyClick = (e?: React.MouseEvent<HTMLDivElement>) => {
@@ -214,7 +217,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
 
     // Trigger tips update
     cleanCopyId();
-    copyIdRef.current = window.setTimeout(() => {
+    copyIdRef.current = setTimeout(() => {
       setCopied(false);
     }, 3000);
 
@@ -313,7 +316,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
         setIsNativeEllipsis(currentEllipsis);
       }
     }
-  }, [enableEllipsis, cssEllipsis, children, cssLineClamp, isNativeVisible]);
+  }, [enableEllipsis, cssEllipsis, children, cssLineClamp, isNativeVisible, ellipsisWidth]);
 
   // https://github.com/ant-design/ant-design/issues/36786
   // Use IntersectionObserver to check if element is invisible
@@ -408,7 +411,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
     if (symbol) {
       expandContent = symbol;
     } else {
-      expandContent = textLocale.expand;
+      expandContent = textLocale?.expand;
     }
 
     return (
@@ -416,7 +419,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
         key="expand"
         className={`${prefixCls}-expand`}
         onClick={onExpandClick}
-        aria-label={textLocale.expand}
+        aria-label={textLocale?.expand}
       >
         {expandContent}
       </a>
@@ -429,7 +432,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
 
     const { icon, tooltip } = editConfig;
 
-    const editTitle = toArray(tooltip)[0] || textLocale.edit;
+    const editTitle = toArray(tooltip)[0] || textLocale?.edit;
     const ariaLabel = typeof editTitle === 'string' ? editTitle : '';
 
     return triggerType.includes('icon') ? (
@@ -448,7 +451,9 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
 
   // Copy
   const renderCopy = () => {
-    if (!enableCopy) return;
+    if (!enableCopy) {
+      return null;
+    }
 
     const { tooltips, icon } = copyConfig;
 
@@ -456,15 +461,18 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
     const iconNodes = toList(icon);
 
     const copyTitle = copied
-      ? getNode(tooltipNodes[1], textLocale.copied)
-      : getNode(tooltipNodes[0], textLocale.copy);
-    const systemStr = copied ? textLocale.copied : textLocale.copy;
+      ? getNode(tooltipNodes[1], textLocale?.copied)
+      : getNode(tooltipNodes[0], textLocale?.copy);
+    const systemStr = copied ? textLocale?.copied : textLocale?.copy;
     const ariaLabel = typeof copyTitle === 'string' ? copyTitle : systemStr;
 
     return (
       <Tooltip key="copy" title={copyTitle}>
         <TransButton
-          className={classNames(`${prefixCls}-copy`, copied && `${prefixCls}-copy-success`)}
+          className={classNames(`${prefixCls}-copy`, {
+            [`${prefixCls}-copy-success`]: copied,
+            [`${prefixCls}-copy-icon-only`]: children === null || children === undefined,
+          })}
           onClick={onCopyClick}
           aria-label={ariaLabel}
         >
@@ -493,7 +501,7 @@ const Base = React.forwardRef<HTMLElement, BlockProps>((props, ref) => {
   ];
 
   return (
-    <ResizeObserver onResize={onResize} disabled={!mergedEnableEllipsis || cssEllipsis}>
+    <ResizeObserver onResize={onResize} disabled={!mergedEnableEllipsis}>
       {(resizeRef: React.RefObject<HTMLElement>) => (
         <EllipsisTooltip
           tooltipProps={tooltipProps}

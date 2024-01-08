@@ -4,6 +4,7 @@ subtitle: 多选框
 group: 数据录入
 title: Checkbox
 cover: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*DzgiRbW3khIAAAAAAAAAAAAADrJ8AQ/original
+coverDark: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*G3MjTYXL6AIAAAAAAAAAAAAADrJ8AQ/original
 demo:
   cols: 2
 ---
@@ -26,10 +27,11 @@ demo:
 <code src="./demo/layout.tsx">布局</code>
 <code src="./demo/debug-line.tsx" debug>同行布局</code>
 <code src="./demo/debug-disable-popover.tsx" debug>禁用下的 Tooltip</code>
+<code src="./demo/custom-line-width.tsx" debug>自定义 lineWidth</code>
 
 ## API
 
-### 属性
+通用属性参考：[通用属性](/docs/react/common-props)
 
 #### Checkbox
 
@@ -40,7 +42,7 @@ demo:
 | defaultChecked | 初始是否选中 | boolean | false |  |
 | disabled | 失效状态 | boolean | false |  |
 | indeterminate | 设置 indeterminate 状态，只负责样式控制 | boolean | false |  |
-| onChange | 变化时的回调函数 | function(e: CheckboxChangeEvent) | - |  |
+| onChange | 变化时的回调函数 | (e: CheckboxChangeEvent) => void | - |  |
 
 #### Checkbox Group
 
@@ -50,8 +52,8 @@ demo:
 | disabled | 整组失效 | boolean | false |  |
 | name | CheckboxGroup 下所有 `input[type="checkbox"]` 的 `name` 属性 | string | - |  |
 | options | 指定可选项 | string\[] \| number\[] \| Option\[] | \[] |  |
-| value | 指定选中的选项 | (string \| number)\[] | \[] |  |
-| onChange | 变化时的回调函数 | function(checkedValue) | - |  |
+| value | 指定选中的选项 | (string \| number \| boolean)\[] | \[] |  |
+| onChange | 变化时的回调函数 | (checkedValue: CheckboxValueType[]) => void | - |  |
 
 ##### Option
 
@@ -71,3 +73,19 @@ interface Option {
 | ------- | -------- | ---- |
 | blur()  | 移除焦点 |      |
 | focus() | 获取焦点 |      |
+
+## 主题变量（Design Token）
+
+<ComponentTokenTable component="Checkbox"></ComponentTokenTable>
+
+## FAQ
+
+### 为什么在 Form.Item 下不能绑定数据？
+
+Form.Item 默认绑定值属性到 `value` 上，而 Checkbox 的值属性为 `checked`。你可以通过 `valuePropName` 来修改绑定的值属性。
+
+```tsx | pure
+<Form.Item name="fieldA" valuePropName="checked">
+  <Checkbox />
+</Form.Item>
+```

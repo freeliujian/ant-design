@@ -1,6 +1,6 @@
 import React from 'react';
 import type { StepsProps } from 'antd';
-import { Steps, List, Avatar } from 'antd';
+import { Avatar, List, Steps } from 'antd';
 
 const data = [
   {
@@ -42,10 +42,10 @@ const App: React.FC = () => (
     <List
       itemLayout="horizontal"
       dataSource={data}
-      renderItem={(item) => (
+      renderItem={(item, index) => (
         <List.Item>
           <List.Item.Meta
-            avatar={<Avatar src="https://joeschmoe.io/api/v1/random" />}
+            avatar={<Avatar src={`https://api.dicebear.com/7.x/miniavs/svg?seed=${index}`} />}
             title={<a href="https://ant.design">{item.title}</a>}
             description="Ant Design, a design language for background applications, is refined by Ant UED Team"
           />

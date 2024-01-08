@@ -1,14 +1,15 @@
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import React, { useState } from 'react';
 import type { RangeValue } from 'rc-picker/lib/interface';
-import { resetWarned } from '../../_util/warning';
+import React, { useState } from 'react';
+import userEvent from '@testing-library/user-event';
+import { CloseCircleFilled } from '@ant-design/icons';
 import DatePicker from '..';
 import focusTest from '../../../tests/shared/focusTest';
-import { render, resetMockDate, setMockDate } from '../../../tests/utils';
+import { render, resetMockDate, setMockDate, screen, waitFor } from '../../../tests/utils';
+import { resetWarned } from '../../_util/warning';
 import enUS from '../locale/en_US';
-
-import { closePicker, openPicker, selectCell } from './utils';
+import { closeCircleByRole, expectCloseCircle, closePicker, openPicker, selectCell } from './utils';
 
 dayjs.extend(customParseFormat);
 
@@ -55,6 +56,65 @@ describe('RangePicker', () => {
     expect(container.firstChild).toMatchSnapshot();
   });
 
+  it('the left selection is before the right selection', () => {
+    let rangePickerValue: dayjs.Dayjs[] = [];
+    const Test: React.FC = () => {
+      const [value, setValue] = useState<RangeValue<dayjs.Dayjs>>(null);
+      return (
+        <RangePicker
+          value={value}
+          mode={['month', 'month']}
+          onPanelChange={(v) => {
+            setValue(v);
+            rangePickerValue = v as dayjs.Dayjs[];
+          }}
+        />
+      );
+    };
+
+    const wrapper = render(<Test />);
+
+    openPicker(wrapper);
+    selectCell(wrapper, 'Feb');
+    openPicker(wrapper, 1);
+    selectCell(wrapper, 'May');
+    closePicker(wrapper, 1);
+
+    const [start, end] = rangePickerValue;
+
+    expect(start.isBefore(end, 'date')).toBeTruthy();
+  });
+
+  it('the left selection is after the right selection, no selection made', () => {
+    let rangePickerValue: dayjs.Dayjs[] = [];
+    const Test: React.FC = () => {
+      const [value, setValue] = useState<RangeValue<dayjs.Dayjs>>(null);
+      return (
+        <RangePicker
+          value={value}
+          mode={['month', 'month']}
+          onPanelChange={(v) => {
+            setValue(v);
+            rangePickerValue = v as dayjs.Dayjs[];
+          }}
+        />
+      );
+    };
+
+    const wrapper = render(<Test />);
+
+    openPicker(wrapper);
+    selectCell(wrapper, 'May');
+    openPicker(wrapper, 1);
+    selectCell(wrapper, 'Feb');
+    closePicker(wrapper, 1);
+
+    const [start, end] = rangePickerValue;
+
+    expect(start).not.toBeNull();
+    expect(end).toBeNull();
+  });
+
   // https://github.com/ant-design/ant-design/issues/13302
   describe('in "month" mode, when the left and right panels select the same month', () => {
     it('the cell status is correct', () => {
@@ -88,7 +148,7 @@ describe('RangePicker', () => {
   });
 
   describe('ranges', () => {
-    it('RangePicker support presetted ranges with Tags', () => {
+    it('RangePicker support preset ranges with Tags', () => {
       const { container } = render(
         <RangePicker
           open
@@ -126,5 +186,39 @@ describe('RangePicker', () => {
     expect(container.querySelector('.legacy')).toBeTruthy();
 
     errSpy.mockRestore();
+  });
+
+  it('allows or prohibits clearing as applicable', async () => {
+    const somepoint = dayjs('2023-08-01');
+    const { rerender } = render(<RangePicker locale={enUS} value={[somepoint, somepoint]} />);
+
+    const { role, options } = closeCircleByRole;
+    await userEvent.hover(screen.getByRole(role, options));
+    await waitFor(() => expectCloseCircle(true));
+
+    rerender(<RangePicker locale={enUS} value={[somepoint, somepoint]} allowClear={false} />);
+    await waitFor(() => expectCloseCircle(false));
+
+    rerender(
+      <RangePicker
+        locale={enUS}
+        value={[somepoint, somepoint]}
+        allowClear={{ clearIcon: <CloseCircleFilled /> }}
+      />,
+    );
+    await waitFor(() => expectCloseCircle(true));
+
+    rerender(
+      <RangePicker
+        locale={enUS}
+        value={[somepoint, somepoint]}
+        allowClear={{ clearIcon: <div data-testid="custom-clear" /> }}
+      />,
+    );
+    await waitFor(() => expectCloseCircle(false));
+    await userEvent.hover(screen.getByTestId('custom-clear'));
+
+    rerender(<RangePicker locale={enUS} value={[somepoint, somepoint]} allowClear={{}} />);
+    await waitFor(() => expectCloseCircle(true));
   });
 });

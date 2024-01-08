@@ -1,5 +1,5 @@
+import { removeCSS, updateCSS } from 'rc-util/lib/Dom/dynamicCSS';
 import * as React from 'react';
-import { updateCSS, removeCSS } from 'rc-util/lib/Dom/dynamicCSS';
 import useLocale from '../../../hooks/useLocale';
 
 const whereCls = 'ant-where-checker';
@@ -45,10 +45,8 @@ export default function InfoNewVersion() {
     const { content } = getComputedStyle(p);
     setSupportWhere(String(content).includes('CHECK'));
 
-    return () => {
-      document.body.removeChild(p);
-      removeCSS(whereCls);
-    };
+    document.body.removeChild(p);
+    removeCSS(whereCls);
   }, []);
 
   return supportWhere ? null : (

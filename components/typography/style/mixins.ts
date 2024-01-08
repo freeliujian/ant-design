@@ -8,11 +8,10 @@
 }
 */
 import { gold } from '@ant-design/colors';
-import type { CSSObject } from '@ant-design/cssinjs';
+import { unit, type CSSObject } from '@ant-design/cssinjs';
 import type { TypographyToken } from '.';
-import { initInputToken } from '../../input/style';
-import type { GenerateStyle } from '../../theme/internal';
 import { operationUnit } from '../../style';
+import type { GenerateStyle } from '../../theme/internal';
 
 // eslint-disable-next-line import/prefer-default-export
 const getTitleStyle = (
@@ -21,10 +20,10 @@ const getTitleStyle = (
   color: string,
   token: TypographyToken,
 ) => {
-  const { sizeMarginHeadingVerticalEnd, fontWeightStrong } = token;
+  const { titleMarginBottom, fontWeightStrong } = token;
 
   return {
-    marginBottom: sizeMarginHeadingVerticalEnd,
+    marginBottom: titleMarginBottom,
     color,
     fontWeight: fontWeightStrong,
     fontSize,
@@ -83,12 +82,13 @@ export const getLinkStyles: GenerateStyle<TypographyToken, CSSObject> = (token) 
   };
 };
 
-export const getResetStyles = (): CSSObject => ({
+export const getResetStyles: GenerateStyle<TypographyToken, CSSObject> = (token): CSSObject => ({
   code: {
     margin: '0 0.2em',
     paddingInline: '0.4em',
     paddingBlock: '0.2em 0.1em',
     fontSize: '85%',
+    fontFamily: token.fontFamilyCode,
     background: 'rgba(150, 150, 150, 0.1)',
     border: '1px solid rgba(100, 100, 100, 0.2)',
     borderRadius: 3,
@@ -99,6 +99,7 @@ export const getResetStyles = (): CSSObject => ({
     paddingInline: '0.4em',
     paddingBlock: '0.15em 0.1em',
     fontSize: '90%',
+    fontFamily: token.fontFamilyCode,
     background: 'rgba(150, 150, 150, 0.06)',
     border: '1px solid rgba(100, 100, 100, 0.2)',
     borderBottomWidth: 2,
@@ -162,6 +163,7 @@ export const getResetStyles = (): CSSObject => ({
     background: 'rgba(150, 150, 150, 0.1)',
     border: '1px solid rgba(100, 100, 100, 0.2)',
     borderRadius: 3,
+    fontFamily: token.fontFamilyCode,
 
     // Compatible for marked
     code: {
@@ -184,23 +186,22 @@ export const getResetStyles = (): CSSObject => ({
 });
 
 export const getEditableStyles: GenerateStyle<TypographyToken, CSSObject> = (token) => {
-  const { componentCls } = token;
+  const { componentCls, paddingSM } = token;
 
-  const inputToken = initInputToken(token);
-  const inputShift = inputToken.inputPaddingVertical + 1;
+  const inputShift = paddingSM;
   return {
     '&-edit-content': {
       position: 'relative',
 
       'div&': {
-        insetInlineStart: -token.paddingSM,
-        marginTop: -inputShift,
-        marginBottom: `calc(1em - ${inputShift}px)`,
+        insetInlineStart: token.calc(token.paddingSM).mul(-1).equal(),
+        marginTop: token.calc(inputShift).mul(-1).equal(),
+        marginBottom: `calc(1em - ${unit(inputShift)})`,
       },
 
       [`${componentCls}-edit-content-confirm`]: {
         position: 'absolute',
-        insetInlineEnd: token.marginXS + 2,
+        insetInlineEnd: token.calc(token.marginXS).add(2).equal(),
         insetBlockEnd: token.marginXS,
         color: token.colorTextDescription,
         // default style
@@ -220,14 +221,17 @@ export const getEditableStyles: GenerateStyle<TypographyToken, CSSObject> = (tok
   };
 };
 
-export const getCopiableStyles: GenerateStyle<TypographyToken, CSSObject> = (token) => ({
-  '&-copy-success': {
+export const getCopyableStyles: GenerateStyle<TypographyToken, CSSObject> = (token) => ({
+  [`${token.componentCls}-copy-success`]: {
     [`
     &,
     &:hover,
     &:focus`]: {
       color: token.colorSuccess,
     },
+  },
+  [`${token.componentCls}-copy-icon-only`]: {
+    marginInlineStart: 0,
   },
 });
 
@@ -251,6 +255,17 @@ export const getEllipsisStyles = (): CSSObject => ({
     // https://blog.csdn.net/iefreer/article/details/50421025
     'a&, span&': {
       verticalAlign: 'bottom',
+    },
+
+    '> code': {
+      paddingBlock: 0,
+      maxWidth: 'calc(100% - 1.2em)',
+      display: 'inline-block',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      verticalAlign: 'bottom',
+      // https://github.com/ant-design/ant-design/issues/45953
+      boxSizing: 'content-box',
     },
   },
 

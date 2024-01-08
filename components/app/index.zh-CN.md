@@ -4,8 +4,10 @@ subtitle: 包裹组件
 group: 其他
 title: App
 cover: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*HJz8SZos2wgAAAAAAAAAAAAADrJ8AQ/original
+coverDark: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*oC92TK44Ex8AAAAAAAAAAAAADrJ8AQ/original
 demo:
   cols: 2
+tag: New
 ---
 
 新的包裹组件，提供重置样式和提供消费上下文的默认环境。
@@ -18,7 +20,8 @@ demo:
 ## 代码演示
 
 <!-- prettier-ignore -->
-<code src="./demo/basic.tsx">basic</code>
+<code src="./demo/basic.tsx">基本用法</code>
+<code src="./demo/config.tsx">Hooks 配置</code>
 
 ## 如何使用
 
@@ -78,11 +81,10 @@ App 组件只能在 `ConfigProvider` 之下才能使用 Design Token， 如果�
 
 ```tsx
 // Entry component
-import React, { useEffect } from 'react';
 import { App } from 'antd';
 import type { MessageInstance } from 'antd/es/message/interface';
-import type { NotificationInstance } from 'antd/es/notification/interface';
 import type { ModalStaticFunctions } from 'antd/es/modal/confirm';
+import type { NotificationInstance } from 'antd/es/notification/interface';
 
 let message: MessageInstance;
 let notification: NotificationInstance;
@@ -103,7 +105,8 @@ export { message, notification, modal };
 // sub page
 import React from 'react';
 import { Button, Space } from 'antd';
-import { message, modal, notification } from './store';
+
+import { message } from './store';
 
 export default () => {
   const showMessage = () => {
@@ -119,3 +122,19 @@ export default () => {
   );
 };
 ```
+
+## API
+
+通用属性参考：[通用属性](/docs/react/common-props)
+
+### App
+
+| 参数 | 说明 | 类型 | 默认值 | 版本 |
+| --- | --- | --- | --- | --- |
+| component | 设置渲染元素，为 `false` 则不创建 DOM 节点 | ComponentType | div | 5.11.0 |
+| message | App 内 Message 的全局配置 | [MessageConfig](/components/message-cn/#messageconfig) | - | 5.3.0 |
+| notification | App 内 Notification 的全局配置 | [NotificationConfig](/components/notification-cn/#notificationconfig) | - | 5.3.0 |
+
+## 主题变量（Design Token）
+
+<ComponentTokenTable component="App"></ComponentTokenTable>

@@ -1,12 +1,9 @@
-import * as React from 'react';
+import { createStyles } from 'antd-style';
 import { Link, useLocation } from 'dumi';
-import { css } from '@emotion/react';
+import * as React from 'react';
 import * as utils from '../../utils';
-import useSiteToken from '../../../hooks/useSiteToken';
 
-const useStyle = () => {
-  const { token } = useSiteToken();
-
+const useStyle = createStyles(({ token, css }) => {
   const { headerHeight, colorTextHeading, fontFamily, mobileMaxWidth } = token;
 
   return {
@@ -31,8 +28,8 @@ const useStyle = () => {
 
       img {
         height: 32px;
-        margin-inline-end: 12px;
         vertical-align: middle;
+        margin-inline-end: 12px;
       }
 
       @media only screen and (max-width: ${mobileMaxWidth}px) {
@@ -40,23 +37,30 @@ const useStyle = () => {
         padding-inline-end: 0;
       }
     `,
+    title: css`
+      line-height: 32px;
+    `,
   };
-};
+});
 
 export interface LogoProps {
   isZhCN: boolean;
   location: any;
 }
 
-const Logo = ({ isZhCN }: LogoProps) => {
+const Logo: React.FC<LogoProps> = ({ isZhCN }) => {
   const { search } = useLocation();
-  const { logo } = useStyle();
-
+  const { styles } = useStyle();
   return (
     <h1>
-      <Link to={utils.getLocalizedPathname('/', isZhCN, search)} css={logo}>
-        <img alt="logo" src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" />
-        <span style={{ lineHeight: '32px' }}>Ant Design</span>
+      <Link to={utils.getLocalizedPathname('/', isZhCN, search)} className={styles.logo}>
+        <img
+          src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg"
+          height={32}
+          width={32}
+          alt="logo"
+        />
+        <span className={styles.title}>Ant Design</span>
       </Link>
     </h1>
   );

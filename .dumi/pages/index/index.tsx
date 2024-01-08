@@ -1,27 +1,36 @@
-import React from 'react';
-import { useLocale as useDumiLocale } from 'dumi';
-import { ConfigProvider } from 'antd';
+import React, { Suspense } from 'react';
+import { ConfigProvider, theme } from 'antd';
+import { createStyles, css } from 'antd-style';
+
+import useDark from '../../hooks/useDark';
 import useLocale from '../../hooks/useLocale';
-import Banner from './components/Banner';
-import Group from './components/Group';
-import { useSiteData } from './components/util';
-import Theme from './components/Theme';
 import BannerRecommends from './components/BannerRecommends';
-import ComponentsList from './components/ComponentsList';
-import DesignFramework from './components/DesignFramework';
+import PreviewBanner from './components/PreviewBanner';
+import Group from './components/Group';
+
+const ComponentsList = React.lazy(() => import('./components/ComponentsList'));
+const DesignFramework = React.lazy(() => import('./components/DesignFramework'));
+const Theme = React.lazy(() => import('./components/Theme'));
+
+const useStyle = createStyles(() => ({
+  image: css`
+    position: absolute;
+    left: 0;
+    top: -50px;
+    height: 160px;
+  `,
+}));
 
 const locales = {
   cn: {
     assetsTitle: '组件丰富，选用自如',
     assetsDesc: '大量实用组件满足你的需求，灵活定制与拓展',
-
     designTitle: '设计语言与研发框架',
     designDesc: '配套生态，让你快速搭建网站应用',
   },
   en: {
     assetsTitle: 'Rich components',
     assetsDesc: 'Practical components to meet your needs, flexible customization and expansion',
-
     designTitle: 'Design and framework',
     designDesc: 'Supporting ecology, allowing you to quickly build website applications',
   },
@@ -29,49 +38,61 @@ const locales = {
 
 const Homepage: React.FC = () => {
   const [locale] = useLocale(locales);
-  const { id: localeId } = useDumiLocale();
-  const localeStr = localeId === 'zh-CN' ? 'cn' : 'en';
+  const { styles } = useStyle();
+  const { token } = theme.useToken();
 
-  const [siteData] = useSiteData();
+  const isRootDark = useDark();
 
   return (
-    <ConfigProvider theme={{ algorithm: undefined }}>
-      <section>
-        <Banner>
-          <BannerRecommends extras={siteData?.extras?.[localeStr]} icons={siteData?.icons} />
-        </Banner>
+    <section>
+      <PreviewBanner>
+        <BannerRecommends />
+      </PreviewBanner>
 
-        <div>
-          <Theme />
-          <Group
-            background="#fff"
-            collapse
-            title={locale.assetsTitle}
-            description={locale.assetsDesc}
-            id="design"
-          >
+      <div>
+        {/* 定制主题 */}
+        <ConfigProvider
+          theme={{
+            algorithm: theme.defaultAlgorithm,
+          }}
+        >
+          <Suspense fallback={null}>
+            <Theme />
+          </Suspense>
+        </ConfigProvider>
+
+        {/* 组件列表 */}
+        <Group
+          background={token.colorBgElevated}
+          collapse
+          title={locale.assetsTitle}
+          description={locale.assetsDesc}
+          id="design"
+        >
+          <Suspense fallback={null}>
             <ComponentsList />
-          </Group>
-          <Group
-            title={locale.designTitle}
-            description={locale.designDesc}
-            background="#F5F8FF"
-            decoration={
-              <>
-                {/* Image Left Top */}
-                <img
-                  style={{ position: 'absolute', left: 0, top: -50, height: 160 }}
-                  src="https://gw.alipayobjects.com/zos/bmw-prod/ba37a413-28e6-4be4-b1c5-01be1a0ebb1c.svg"
-                  alt=""
-                />
-              </>
-            }
-          >
+          </Suspense>
+        </Group>
+
+        {/* 设计语言 */}
+        <Group
+          title={locale.designTitle}
+          description={locale.designDesc}
+          background={isRootDark ? 'rgb(57, 63, 74)' : '#F5F8FF'}
+          decoration={
+            <img
+              className={styles.image}
+              src="https://gw.alipayobjects.com/zos/bmw-prod/ba37a413-28e6-4be4-b1c5-01be1a0ebb1c.svg"
+              alt=""
+            />
+          }
+        >
+          <Suspense fallback={null}>
             <DesignFramework />
-          </Group>
-        </div>
-      </section>
-    </ConfigProvider>
+          </Suspense>
+        </Group>
+      </div>
+    </section>
   );
 };
 

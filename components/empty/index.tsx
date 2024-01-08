@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import * as React from 'react';
 import { ConfigContext } from '../config-provider';
-import LocaleReceiver from '../locale/LocaleReceiver';
+import { useLocale } from '../locale';
 import DefaultEmptyImg from './empty';
 import SimpleEmptyImg from './simple';
 
@@ -17,6 +17,7 @@ export interface TransferLocale {
 export interface EmptyProps {
   prefixCls?: string;
   className?: string;
+  rootClassName?: string;
   style?: React.CSSProperties;
   /** @since 3.16.0 */
   imageStyle?: React.CSSProperties;
@@ -32,54 +33,56 @@ type CompoundedComponent = React.FC<EmptyProps> & {
 
 const Empty: CompoundedComponent = ({
   className,
+  rootClassName,
   prefixCls: customizePrefixCls,
   image = defaultEmptyImg,
   description,
   children,
   imageStyle,
+  style,
   ...restProps
 }) => {
-  const { getPrefixCls, direction } = React.useContext(ConfigContext);
+  const { getPrefixCls, direction, empty } = React.useContext(ConfigContext);
 
   const prefixCls = getPrefixCls('empty', customizePrefixCls);
-  const [wrapSSR, hashId] = useStyle(prefixCls);
+  const [wrapCSSVar, hashId, cssVarCls] = useStyle(prefixCls);
 
-  return wrapSSR(
-    <LocaleReceiver componentName="Empty">
-      {(locale: TransferLocale) => {
-        const des = typeof description !== 'undefined' ? description : locale.description;
-        const alt = typeof des === 'string' ? des : 'empty';
+  const [locale] = useLocale('Empty');
 
-        let imageNode: React.ReactNode = null;
+  const des = typeof description !== 'undefined' ? description : locale?.description;
+  const alt = typeof des === 'string' ? des : 'empty';
 
-        if (typeof image === 'string') {
-          imageNode = <img alt={alt} src={image} />;
-        } else {
-          imageNode = image;
-        }
+  let imageNode: React.ReactNode = null;
 
-        return (
-          <div
-            className={classNames(
-              hashId,
-              prefixCls,
-              {
-                [`${prefixCls}-normal`]: image === simpleEmptyImg,
-                [`${prefixCls}-rtl`]: direction === 'rtl',
-              },
-              className,
-            )}
-            {...restProps}
-          >
-            <div className={`${prefixCls}-image`} style={imageStyle}>
-              {imageNode}
-            </div>
-            {des && <div className={`${prefixCls}-description`}>{des}</div>}
-            {children && <div className={`${prefixCls}-footer`}>{children}</div>}
-          </div>
-        );
-      }}
-    </LocaleReceiver>,
+  if (typeof image === 'string') {
+    imageNode = <img alt={alt} src={image} />;
+  } else {
+    imageNode = image;
+  }
+
+  return wrapCSSVar(
+    <div
+      className={classNames(
+        hashId,
+        cssVarCls,
+        prefixCls,
+        empty?.className,
+        {
+          [`${prefixCls}-normal`]: image === simpleEmptyImg,
+          [`${prefixCls}-rtl`]: direction === 'rtl',
+        },
+        className,
+        rootClassName,
+      )}
+      style={{ ...empty?.style, ...style }}
+      {...restProps}
+    >
+      <div className={`${prefixCls}-image`} style={imageStyle}>
+        {imageNode}
+      </div>
+      {des && <div className={`${prefixCls}-description`}>{des}</div>}
+      {children && <div className={`${prefixCls}-footer`}>{children}</div>}
+    </div>,
   );
 };
 

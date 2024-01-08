@@ -3,6 +3,7 @@ category: Components
 group: Data Entry
 title: Checkbox
 cover: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*DzgiRbW3khIAAAAAAAAAAAAADrJ8AQ/original
+coverDark: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*G3MjTYXL6AIAAAAAAAAAAAAADrJ8AQ/original
 demo:
   cols: 2
 ---
@@ -25,10 +26,11 @@ Checkbox component.
 <code src="./demo/layout.tsx">Use with Grid</code>
 <code src="./demo/debug-line.tsx" debug>Same line</code>
 <code src="./demo/debug-disable-popover.tsx" debug>Disabled to show Tooltip</code>
+<code src="./demo/custom-line-width.tsx" debug>customize lineWidth</code>
 
 ## API
 
-### Props
+Common props ref：[Common props](/docs/react/common-props)
 
 #### Checkbox
 
@@ -39,7 +41,7 @@ Checkbox component.
 | defaultChecked | Specifies the initial state: whether or not the checkbox is selected | boolean | false |  |
 | disabled | If disable checkbox | boolean | false |  |
 | indeterminate | The indeterminate checked state of checkbox | boolean | false |  |
-| onChange | The callback function that is triggered when the state changes | function(e: CheckboxChangeEvent) | - |  |
+| onChange | The callback function that is triggered when the state changes | (e: CheckboxChangeEvent) => void | - |  |
 
 #### Checkbox Group
 
@@ -49,8 +51,18 @@ Checkbox component.
 | disabled | If disable all checkboxes | boolean | false |  |
 | name | The `name` property of all `input[type="checkbox"]` children | string | - |  |
 | options | Specifies options | string\[] \| number\[] \| Option\[] | \[] |  |
-| value | Used for setting the currently selected value | (string \| number)\[] | \[] |  |
-| onChange | The callback function that is triggered when the state changes | function(checkedValue) | - |  |
+| value | Used for setting the currently selected value | (string \| number \| boolean)\[] | \[] |  |
+| onChange | The callback function that is triggered when the state changes | (checkedValue: CheckboxValueType[]) => void | - |  |
+
+##### Option
+
+```typescript
+interface Option {
+  label: string;
+  value: string;
+  disabled?: boolean;
+}
+```
 
 ### Methods
 
@@ -60,3 +72,19 @@ Checkbox component.
 | ------- | ------------ | ------- |
 | blur()  | Remove focus |         |
 | focus() | Get focus    |         |
+
+## Design Token
+
+<ComponentTokenTable component="Checkbox"></ComponentTokenTable>
+
+## FAQ
+
+### Why not work in Form.Item?
+
+Form.Item default bind value to `value` property, but Checkbox value property is `checked`. You can use `valuePropName` to change bind property.
+
+```tsx | pure
+<Form.Item name="fieldA" valuePropName="checked">
+  <Checkbox />
+</Form.Item>
+```

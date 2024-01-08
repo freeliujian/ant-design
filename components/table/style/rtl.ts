@@ -20,6 +20,8 @@ const genStyle: GenerateStyle<TableToken, CSSObject> = (token) => {
       },
 
       [`${componentCls}-row-expand-icon`]: {
+        float: 'right',
+
         '&::after': {
           transform: 'rotate(-90deg)',
         },
@@ -30,6 +32,22 @@ const genStyle: GenerateStyle<TableToken, CSSObject> = (token) => {
 
         '&-collapsed::after': {
           transform: 'rotate(0deg)',
+        },
+      },
+
+      [`${componentCls}-container`]: {
+        '&::before': {
+          insetInlineStart: 'unset',
+          insetInlineEnd: 0,
+        },
+
+        '&::after': {
+          insetInlineStart: 0,
+          insetInlineEnd: 'unset',
+        },
+
+        [`${componentCls}-row-indent`]: {
+          float: 'right',
         },
       },
     },

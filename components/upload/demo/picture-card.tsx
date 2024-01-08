@@ -71,15 +71,15 @@ const App: React.FC = () => {
     setFileList(newFileList);
 
   const uploadButton = (
-    <div>
+    <button style={{ border: 0, background: 'none' }} type="button">
       <PlusOutlined />
       <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
+    </button>
   );
   return (
     <>
       <Upload
-        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+        action="https://run.mocky.io/v3/435e224c-44fb-4773-9faf-380c5e6a2188"
         listType="picture-card"
         fileList={fileList}
         onPreview={handlePreview}

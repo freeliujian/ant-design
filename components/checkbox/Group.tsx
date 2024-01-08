@@ -1,10 +1,12 @@
+import * as React from 'react';
 import classNames from 'classnames';
 import omit from 'rc-util/lib/omit';
-import * as React from 'react';
+
 import { ConfigContext } from '../config-provider';
+import useCSSVarCls from '../config-provider/hooks/useCSSVarCls';
 import type { CheckboxChangeEvent } from './Checkbox';
 import Checkbox from './Checkbox';
-
+import GroupContext from './GroupContext';
 import useStyle from './style';
 
 export type CheckboxValueType = string | number | boolean;
@@ -14,12 +16,16 @@ export interface CheckboxOptionType {
   value: CheckboxValueType;
   style?: React.CSSProperties;
   disabled?: boolean;
+  title?: string;
+  id?: string;
   onChange?: (e: CheckboxChangeEvent) => void;
+  required?: boolean;
 }
 
 export interface AbstractCheckboxGroupProps {
   prefixCls?: string;
   className?: string;
+  rootClassName?: string;
   options?: Array<CheckboxOptionType | string | number>;
   disabled?: boolean;
   style?: React.CSSProperties;
@@ -33,30 +39,21 @@ export interface CheckboxGroupProps extends AbstractCheckboxGroupProps {
   children?: React.ReactNode;
 }
 
-export interface CheckboxGroupContext {
-  name?: string;
-  toggleOption?: (option: CheckboxOptionType) => void;
-  value?: any;
-  disabled?: boolean;
-  registerValue: (val: string) => void;
-  cancelValue: (val: string) => void;
-}
-
-export const GroupContext = React.createContext<CheckboxGroupContext | null>(null);
-
-const InternalCheckboxGroup: React.ForwardRefRenderFunction<HTMLDivElement, CheckboxGroupProps> = (
-  {
+const InternalGroup: React.ForwardRefRenderFunction<HTMLDivElement, CheckboxGroupProps> = (
+  props,
+  ref,
+) => {
+  const {
     defaultValue,
     children,
     options = [],
     prefixCls: customizePrefixCls,
     className,
+    rootClassName,
     style,
     onChange,
     ...restProps
-  },
-  ref,
-) => {
+  } = props;
   const { getPrefixCls, direction } = React.useContext(ConfigContext);
 
   const [value, setValue] = React.useState<CheckboxValueType[]>(
@@ -70,16 +67,16 @@ const InternalCheckboxGroup: React.ForwardRefRenderFunction<HTMLDivElement, Chec
     }
   }, [restProps.value]);
 
-  const getOptions = () =>
-    options.map((option) => {
-      if (typeof option === 'string' || typeof option === 'number') {
-        return {
-          label: option,
-          value: option,
-        };
-      }
-      return option;
-    });
+  const memoOptions = React.useMemo(
+    () =>
+      options.map<CheckboxOptionType>((option) => {
+        if (typeof option === 'string' || typeof option === 'number') {
+          return { label: option, value: option };
+        }
+        return option;
+      }),
+    [options],
+  );
 
   const cancelValue = (val: string) => {
     setRegisteredValues((prevValues) => prevValues.filter((v) => v !== val));
@@ -100,13 +97,12 @@ const InternalCheckboxGroup: React.ForwardRefRenderFunction<HTMLDivElement, Chec
     if (!('value' in restProps)) {
       setValue(newValue);
     }
-    const opts = getOptions();
     onChange?.(
       newValue
         .filter((val) => registeredValues.includes(val))
         .sort((a, b) => {
-          const indexA = opts.findIndex((opt) => opt.value === a);
-          const indexB = opts.findIndex((opt) => opt.value === b);
+          const indexA = memoOptions.findIndex((opt) => opt.value === a);
+          const indexB = memoOptions.findIndex((opt) => opt.value === b);
           return indexA - indexB;
         }),
     );
@@ -115,26 +111,30 @@ const InternalCheckboxGroup: React.ForwardRefRenderFunction<HTMLDivElement, Chec
   const prefixCls = getPrefixCls('checkbox', customizePrefixCls);
   const groupPrefixCls = `${prefixCls}-group`;
 
-  const [wrapSSR, hashId] = useStyle(prefixCls);
+  const rootCls = useCSSVarCls(prefixCls);
+  const [wrapCSSVar, hashId, cssVarCls] = useStyle(prefixCls, rootCls);
 
   const domProps = omit(restProps, ['value', 'disabled']);
 
-  if (options && options.length > 0) {
-    children = getOptions().map((option) => (
-      <Checkbox
-        prefixCls={prefixCls}
-        key={option.value.toString()}
-        disabled={'disabled' in option ? option.disabled : restProps.disabled}
-        value={option.value}
-        checked={value.includes(option.value)}
-        onChange={option.onChange}
-        className={`${groupPrefixCls}-item`}
-        style={option.style}
-      >
-        {option.label}
-      </Checkbox>
-    ));
-  }
+  const childrenNode = options.length
+    ? memoOptions.map<React.ReactNode>((option) => (
+        <Checkbox
+          prefixCls={prefixCls}
+          key={option.value.toString()}
+          disabled={'disabled' in option ? option.disabled : restProps.disabled}
+          value={option.value}
+          checked={value.includes(option.value)}
+          onChange={option.onChange}
+          className={`${groupPrefixCls}-item`}
+          style={option.style}
+          title={option.title}
+          id={option.id}
+          required={option.required}
+        >
+          {option.label}
+        </Checkbox>
+      ))
+    : children;
 
   // eslint-disable-next-line react/jsx-no-constructed-context-values
   const context = {
@@ -152,15 +152,21 @@ const InternalCheckboxGroup: React.ForwardRefRenderFunction<HTMLDivElement, Chec
       [`${groupPrefixCls}-rtl`]: direction === 'rtl',
     },
     className,
+    rootClassName,
+    cssVarCls,
+    rootCls,
     hashId,
   );
-  return wrapSSR(
+  return wrapCSSVar(
     <div className={classString} style={style} {...domProps} ref={ref}>
-      <GroupContext.Provider value={context}>{children}</GroupContext.Provider>
+      <GroupContext.Provider value={context}>{childrenNode}</GroupContext.Provider>
     </div>,
   );
 };
 
-const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps>(InternalCheckboxGroup);
+export type { CheckboxGroupContext } from './GroupContext';
+export { GroupContext };
+
+const CheckboxGroup = React.forwardRef<HTMLDivElement, CheckboxGroupProps>(InternalGroup);
 
 export default React.memo(CheckboxGroup);
