@@ -22,7 +22,8 @@ export interface DirectoryTreeProps<T extends BasicDataNode = DataNode> extends 
 
 type DirectoryTreeCompoundedComponent = (<T extends BasicDataNode | DataNode = DataNode>(
   props: React.PropsWithChildren<DirectoryTreeProps<T>> & React.RefAttributes<RcTree>,
-) => React.ReactElement) & { displayName?: string };
+) => React.ReactElement) &
+  Pick<React.FC, 'displayName'>;
 
 export interface DirectoryTreeState {
   expandedKeys?: Key[];
@@ -46,9 +47,9 @@ const DirectoryTree: React.ForwardRefRenderFunction<RcTree, DirectoryTreeProps> 
   ref,
 ) => {
   // Shift click usage
-  const lastSelectedKey = React.useRef<Key>();
+  const lastSelectedKey = React.useRef<Key>(null);
 
-  const cachedSelectedKeys = React.useRef<Key[]>();
+  const cachedSelectedKeys = React.useRef<Key[]>(null);
 
   const getInitExpandedKeys = () => {
     const { keyEntities } = convertDataToEntities(getTreeData(props));
@@ -64,7 +65,7 @@ const DirectoryTree: React.ForwardRefRenderFunction<RcTree, DirectoryTreeProps> 
         keyEntities,
       );
     } else {
-      initExpandedKeys = (props.expandedKeys || defaultExpandedKeys)!;
+      initExpandedKeys = props.expandedKeys || defaultExpandedKeys || [];
     }
     return initExpandedKeys;
   };
@@ -119,7 +120,7 @@ const DirectoryTree: React.ForwardRefRenderFunction<RcTree, DirectoryTreeProps> 
     // const newState: DirectoryTreeState = {};
 
     // We need wrap this event since some value is not same
-    const newEvent: any = {
+    const newEvent = {
       ...event,
       selected: true, // Directory selected always true
     };
@@ -145,7 +146,7 @@ const DirectoryTree: React.ForwardRefRenderFunction<RcTree, DirectoryTreeProps> 
             treeData,
             expandedKeys,
             startKey: key,
-            endKey: lastSelectedKey.current,
+            endKey: lastSelectedKey.current!,
             fieldNames,
           }),
         ]),

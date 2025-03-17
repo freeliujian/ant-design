@@ -1,5 +1,6 @@
 import { unit } from '@ant-design/cssinjs';
 import type { CSSInterpolation } from '@ant-design/cssinjs';
+
 import type { MenuToken } from '.';
 import { genFocusOutline } from '../../style';
 
@@ -12,6 +13,7 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
     componentCls,
     itemColor,
     itemSelectedColor,
+    subMenuItemSelectedColor,
     groupTitleColor,
     itemBg,
     subMenuItemBg,
@@ -37,7 +39,8 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
     dangerItemSelectedColor,
     dangerItemActiveBg,
     dangerItemSelectedBg,
-
+    // Bg
+    popupBg,
     itemHoverBg,
     itemActiveBg,
     menuSubMenuBg,
@@ -47,8 +50,6 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
     horizontalItemSelectedBg,
     horizontalItemBorderRadius,
     horizontalItemHoverBg,
-
-    popupBg,
   } = token;
 
   return {
@@ -61,13 +62,20 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
       },
 
       // ======================== Item ========================
-      [`${componentCls}-item-group-title`]: {
-        color: groupTitleColor,
+      [`${componentCls}-item`]: {
+        '&-group-title, &-extra': {
+          color: groupTitleColor,
+        },
       },
 
-      [`${componentCls}-submenu-selected`]: {
-        [`> ${componentCls}-submenu-title`]: {
-          color: itemSelectedColor,
+      [`${componentCls}-submenu-selected > ${componentCls}-submenu-title`]: {
+        color: subMenuItemSelectedColor,
+      },
+
+      [`${componentCls}-item, ${componentCls}-submenu-title`]: {
+        color: itemColor,
+        [`&:not(${componentCls}-item-disabled):focus-visible`]: {
+          ...accessibilityFocus(token),
         },
       },
 
@@ -135,7 +143,7 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
           color: dangerItemSelectedColor,
         },
 
-        [`a, a:hover`]: {
+        'a, a:hover': {
           color: 'inherit',
         },
       },
@@ -149,19 +157,20 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
         },
       },
 
-      [`${componentCls}-item, ${componentCls}-submenu-title`]: {
-        [`&:not(${componentCls}-item-disabled):focus-visible`]: {
-          ...accessibilityFocus(token),
-        },
-      },
-
       [`&${componentCls}-submenu > ${componentCls}`]: {
         backgroundColor: menuSubMenuBg,
       },
 
+      // ===== 设置浮层的颜色 =======
+      // ！dark 模式会被popupBg 会被rest 为 darkPopupBg
       [`&${componentCls}-popup > ${componentCls}`]: {
         backgroundColor: popupBg,
       },
+
+      [`&${componentCls}-submenu-popup > ${componentCls}`]: {
+        backgroundColor: popupBg,
+      },
+      // ===== 设置浮层的颜色 end =======
 
       // ====================== Horizontal ======================
       [`&${componentCls}-horizontal`]: {
@@ -186,14 +195,14 @@ const getThemeStyle = (token: MenuToken, themeSuffix: string): CSSInterpolation 
             content: '""',
           },
 
-          [`&:hover, &-active, &-open`]: {
+          '&:hover, &-active, &-open': {
             background: horizontalItemHoverBg,
             '&::after': {
               borderBottomWidth: activeBarHeight,
               borderBottomColor: horizontalItemSelectedColor,
             },
           },
-          [`&-selected`]: {
+          '&-selected': {
             color: horizontalItemSelectedColor,
             backgroundColor: horizontalItemSelectedBg,
             '&:hover': {

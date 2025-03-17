@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
-import debounce from 'lodash/debounce';
 import { Select, Spin } from 'antd';
-import type { SelectProps } from 'antd/es/select';
+import type { SelectProps } from 'antd';
+import debounce from 'lodash/debounce';
 
 export interface DebounceSelectProps<ValueType = any>
   extends Omit<SelectProps<ValueType | ValueType[]>, 'options' | 'children'> {
@@ -79,10 +79,12 @@ const App: React.FC = () => {
       value={value}
       placeholder="Select users"
       fetchOptions={fetchUserList}
-      onChange={(newValue) => {
-        setValue(newValue as UserValue[]);
-      }}
       style={{ width: '100%' }}
+      onChange={(newValue) => {
+        if (Array.isArray(newValue)) {
+          setValue(newValue);
+        }
+      }}
     />
   );
 };

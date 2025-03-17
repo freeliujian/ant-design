@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useMemo, Suspense } from 'react';
+import { scan } from 'react-scan'; // import this BEFORE react
+import React, { Suspense, useCallback, useEffect } from 'react';
 import {
   createCache,
   extractStyle,
@@ -9,8 +10,9 @@ import {
 } from '@ant-design/cssinjs';
 import { HappyProvider } from '@ant-design/happy-work-theme';
 import { getSandpackCssText } from '@codesandbox/sandpack-react';
-import { App, theme as antdTheme } from 'antd';
-import type { DirectionType } from 'antd/es/config-provider';
+import { theme as antdTheme, App } from 'antd';
+import type { MappingAlgorithm } from 'antd';
+import type { DirectionType, ThemeConfig } from 'antd/es/config-provider';
 import { createSearchParams, useOutlet, useSearchParams, useServerInsertedHTML } from 'dumi';
 
 import { DarkContext } from '../../hooks/useDark';
@@ -20,6 +22,8 @@ import type { ThemeName } from '../common/ThemeSwitch';
 import SiteThemeProvider from '../SiteThemeProvider';
 import type { SiteContextProps } from '../slots/SiteContext';
 import SiteContext from '../slots/SiteContext';
+
+import '@ant-design/v5-patch-for-react-19';
 
 const ThemeSwitch = React.lazy(() => import('../common/ThemeSwitch'));
 
@@ -34,6 +38,20 @@ export const ANT_DESIGN_NOT_SHOW_BANNER = 'ANT_DESIGN_NOT_SHOW_BANNER';
 //   (global as any).styleCache = styleCache;
 // }
 
+// Compatible with old anchors
+if (typeof window !== 'undefined') {
+  const hashId = location.hash.slice(1);
+  if (hashId.startsWith('components-')) {
+    if (!document.querySelector(`#${hashId}`)) {
+      location.hash = `#${hashId.replace(/^components-/, '')}`;
+    }
+  }
+  scan({
+    enabled: process.env.NODE_ENV !== 'production',
+    log: true, // logs render info to console (default: false)
+  });
+}
+
 const getAlgorithm = (themes: ThemeName[] = []) =>
   themes
     .map((theme) => {
@@ -43,9 +61,9 @@ const getAlgorithm = (themes: ThemeName[] = []) =>
       if (theme === 'compact') {
         return antdTheme.compactAlgorithm;
       }
-      return null;
+      return null as unknown as MappingAlgorithm;
     })
-    .filter((item) => item) as (typeof antdTheme.darkAlgorithm)[];
+    .filter(Boolean);
 
 const GlobalLayout: React.FC = () => {
   const outlet = useOutlet();
@@ -58,6 +76,9 @@ const GlobalLayout: React.FC = () => {
       theme: [],
       bannerVisible: false,
     });
+
+  // TODO: This can be remove in v6
+  const useCssVar = searchParams.get('cssVar') !== 'false';
 
   const updateSiteConfig = useCallback(
     (props: SiteState) => {
@@ -111,6 +132,10 @@ const GlobalLayout: React.FC = () => {
       direction: _direction === 'rtl' ? 'rtl' : 'ltr',
       // bannerVisible: storedBannerVisibleLastTime ? !!storedBannerVisible : true,
     });
+    document.documentElement.setAttribute(
+      'data-prefers-color',
+      _theme.includes('dark') ? 'dark' : 'light',
+    );
     // Handle isMobile
     updateMobileMode();
 
@@ -120,7 +145,7 @@ const GlobalLayout: React.FC = () => {
     };
   }, []);
 
-  const siteContextValue = useMemo(
+  const siteContextValue = React.useMemo<SiteContextProps>(
     () => ({
       direction,
       updateSiteConfig,
@@ -131,6 +156,16 @@ const GlobalLayout: React.FC = () => {
     [isMobile, direction, updateSiteConfig, theme, bannerVisible],
   );
 
+  const themeConfig = React.useMemo<ThemeConfig>(
+    () => ({
+      algorithm: getAlgorithm(theme),
+      token: { motion: !theme.includes('motion-off') },
+      cssVar: useCssVar,
+      hashed: !useCssVar,
+    }),
+    [theme],
+  );
+
   const [styleCache] = React.useState(() => createCache());
 
   useServerInsertedHTML(() => {
@@ -138,6 +173,7 @@ const GlobalLayout: React.FC = () => {
       plain: true,
       types: 'style',
     });
+    // biome-ignore lint/security/noDangerouslySetInnerHtml: only used in .dumi
     return <style data-type="antd-cssinjs" dangerouslySetInnerHTML={{ __html: styleText }} />;
   });
 
@@ -151,6 +187,7 @@ const GlobalLayout: React.FC = () => {
         data-type="antd-css-var"
         data-rc-order="prepend"
         data-rc-priority="-9999"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: only used in .dumi
         dangerouslySetInnerHTML={{ __html: styleText }}
       />
     );
@@ -160,6 +197,7 @@ const GlobalLayout: React.FC = () => {
     <style
       data-sandpack="true"
       id="sandpack"
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: only used in .dumi
       dangerouslySetInnerHTML={{ __html: getSandpackCssText() }}
     />
   ));
@@ -191,15 +229,7 @@ const GlobalLayout: React.FC = () => {
         linters={[legacyNotSelectorLinter, parentSelectorLinter, NaNLinter]}
       >
         <SiteContext.Provider value={siteContextValue}>
-          <SiteThemeProvider
-            theme={{
-              algorithm: getAlgorithm(theme),
-              token: {
-                motion: !theme.includes('motion-off'),
-              },
-              cssVar: true,
-            }}
-          >
+          <SiteThemeProvider theme={themeConfig}>
             <HappyProvider disabled={!theme.includes('happy-work')}>{content}</HappyProvider>
           </SiteThemeProvider>
         </SiteContext.Provider>

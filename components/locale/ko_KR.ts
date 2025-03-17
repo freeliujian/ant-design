@@ -1,8 +1,8 @@
-/* eslint-disable no-template-curly-in-string */
 import Pagination from 'rc-pagination/lib/locale/ko_KR';
+
+import type { Locale } from '.';
 import Calendar from '../calendar/locale/ko_KR';
 import DatePicker from '../date-picker/locale/ko_KR';
-import type { Locale } from '.';
 import TimePicker from '../time-picker/locale/ko_KR';
 
 const typeTemplate = '${label} 유효하지 않은 ${type}';
@@ -21,7 +21,7 @@ const localeValues: Locale = {
     filterConfirm: '확인',
     filterReset: '초기화',
     filterEmptyText: '필터 없음',
-    filterCheckall: '전체 선택',
+    filterCheckAll: '전체 선택',
     filterSearchPlaceholder: '필터 검색',
     emptyText: '데이터 없음',
     selectAll: '전체 선택',
@@ -79,9 +79,6 @@ const localeValues: Locale = {
     copy: '복사',
     copied: '복사 됨',
     expand: '확장',
-  },
-  PageHeader: {
-    back: '뒤로',
   },
   Form: {
     optional: '(선택사항)',
@@ -142,6 +139,9 @@ const localeValues: Locale = {
   },
   ColorPicker: {
     presetEmpty: '미정',
+    transparent: '투명',
+    singleColor: '단색',
+    gradientColor: '그라데이션',
   },
 };
 

@@ -1,8 +1,8 @@
-/* eslint-disable no-template-curly-in-string */
 import Pagination from 'rc-pagination/lib/locale/eu_ES';
+
+import type { Locale } from '.';
 import Calendar from '../calendar/locale/eu_ES';
 import DatePicker from '../date-picker/locale/eu_ES';
-import type { Locale } from '.';
 import TimePicker from '../time-picker/locale/eu_ES';
 
 const typeTemplate = '${label} ez da ${type} balioduna';
@@ -21,7 +21,7 @@ const localeValues: Locale = {
     filterConfirm: 'Onartu',
     filterReset: 'Garbitu',
     filterEmptyText: 'Iragazkirik gabe',
-    filterCheckall: 'Hautatu dena',
+    filterCheckAll: 'Hautatu dena',
     filterSearchPlaceholder: 'Bilatu iragazkietan',
     emptyText: 'Daturik gabe',
     selectAll: 'Hautatu dena',
@@ -79,9 +79,6 @@ const localeValues: Locale = {
     copy: 'Kopiatu',
     copied: 'Kopiatuta',
     expand: 'Zabaldu',
-  },
-  PageHeader: {
-    back: 'Itzuli',
   },
   Form: {
     optional: '(aukerakoa)',
@@ -142,6 +139,9 @@ const localeValues: Locale = {
   },
   ColorPicker: {
     presetEmpty: 'Hustu',
+    transparent: 'Gardena',
+    singleColor: 'Kolore bakarra',
+    gradientColor: 'Gradiente kolorea',
   },
 };
 

@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { Radio, Space, Table, Tag } from 'antd';
-import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
+import type { TableProps } from 'antd';
+
+type ColumnsType<T extends object> = TableProps<T>['columns'];
+type TablePagination<T extends object> = NonNullable<Exclude<TableProps<T>['pagination'], boolean>>;
+type TablePaginationPosition<T extends object> = NonNullable<
+  TablePagination<T>['position']
+>[number];
 
 interface DataType {
   key: string;
@@ -9,8 +15,6 @@ interface DataType {
   address: string;
   tags: string[];
 }
-
-type TablePaginationPosition = NonNullable<TablePaginationConfig['position']>[number];
 
 const topOptions = [
   { label: 'topLeft', value: 'topLeft' },
@@ -100,9 +104,8 @@ const data: DataType[] = [
 ];
 
 const App: React.FC = () => {
-  const [top, setTop] = useState<TablePaginationPosition>('topLeft');
-  const [bottom, setBottom] = useState<TablePaginationPosition>('bottomRight');
-
+  const [top, setTop] = useState<TablePaginationPosition<DataType>>('topLeft');
+  const [bottom, setBottom] = useState<TablePaginationPosition<DataType>>('bottomRight');
   return (
     <div>
       <div>
@@ -123,7 +126,11 @@ const App: React.FC = () => {
           setBottom(e.target.value);
         }}
       />
-      <Table columns={columns} pagination={{ position: [top, bottom] }} dataSource={data} />
+      <Table<DataType>
+        columns={columns}
+        pagination={{ position: [top, bottom] }}
+        dataSource={data}
+      />
     </div>
   );
 };

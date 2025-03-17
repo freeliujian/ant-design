@@ -1,9 +1,9 @@
 import type { CSSObject } from '@ant-design/cssinjs';
+import { unit } from '@ant-design/cssinjs';
 
-import { resetComponent, textEllipsis } from '../../style';
+import { genFocusOutline, genFocusStyle, resetComponent, textEllipsis } from '../../style';
 import type { FullToken, GenerateStyle, GetDefaultToken } from '../../theme/internal';
 import { genStyleHooks, mergeToken } from '../../theme/internal';
-import { unit } from '@ant-design/cssinjs';
 
 export interface ComponentToken {
   /**
@@ -36,11 +36,19 @@ export interface ComponentToken {
    * @descEN Text color of item when selected
    */
   itemSelectedColor: string;
+  /**
+   * @desc Segmented 控件容器的 padding
+   * @descEN Padding of Segmented container
+   */
+  trackPadding: string | number;
+  /**
+   * @desc Segmented 控件容器背景色
+   * @descEN Background of Segmented container
+   */
+  trackBg: string;
 }
 
 interface SegmentedToken extends FullToken<'Segmented'> {
-  segmentedPadding: number;
-  segmentedBgColor: string;
   segmentedPaddingHorizontal: number | string;
   segmentedPaddingHorizontalSM: number | string;
 }
@@ -74,15 +82,15 @@ const genSegmentedStyle: GenerateStyle<SegmentedToken> = (token: SegmentedToken)
 
   const labelHeight = token
     .calc(token.controlHeight)
-    .sub(token.calc(token.segmentedPadding).mul(2))
+    .sub(token.calc(token.trackPadding).mul(2))
     .equal();
   const labelHeightLG = token
     .calc(token.controlHeightLG)
-    .sub(token.calc(token.segmentedPadding).mul(2))
+    .sub(token.calc(token.trackPadding).mul(2))
     .equal();
   const labelHeightSM = token
     .calc(token.controlHeightSM)
-    .sub(token.calc(token.segmentedPadding).mul(2))
+    .sub(token.calc(token.trackPadding).mul(2))
     .equal();
 
   return {
@@ -90,23 +98,37 @@ const genSegmentedStyle: GenerateStyle<SegmentedToken> = (token: SegmentedToken)
       ...resetComponent(token),
 
       display: 'inline-block',
-      padding: token.segmentedPadding,
+      padding: token.trackPadding,
       color: token.itemColor,
-      backgroundColor: token.segmentedBgColor,
+      background: token.trackBg,
       borderRadius: token.borderRadius,
       transition: `all ${token.motionDurationMid} ${token.motionEaseInOut}`,
+      ...genFocusStyle(token),
 
       [`${componentCls}-group`]: {
         position: 'relative',
         display: 'flex',
         alignItems: 'stretch',
         justifyItems: 'flex-start',
+        flexDirection: 'row',
         width: '100%',
       },
 
       // RTL styles
       [`&${componentCls}-rtl`]: {
         direction: 'rtl',
+      },
+
+      [`&${componentCls}-vertical`]: {
+        [`${componentCls}-group`]: {
+          flexDirection: 'column',
+        },
+
+        [`${componentCls}-thumb`]: {
+          width: '100%',
+          height: 0,
+          padding: `0 ${unit(token.paddingXXS)}`,
+        },
       },
 
       // block styles
@@ -135,15 +157,21 @@ const genSegmentedStyle: GenerateStyle<SegmentedToken> = (token: SegmentedToken)
           color: token.itemSelectedColor,
         },
 
+        '&-focused': {
+          ...genFocusOutline(token),
+        },
+
         '&::after': {
           content: '""',
           position: 'absolute',
+          zIndex: -1,
           width: '100%',
           height: '100%',
           top: 0,
           insetInlineStart: 0,
           borderRadius: 'inherit',
-          transition: `background-color ${token.motionDurationMid}`,
+          opacity: 0,
+          transition: `opacity ${token.motionDurationMid}`,
           // This is mandatory to make it not clickable or hoverable
           // Ref: https://github.com/ant-design/ant-design/issues/40888
           pointerEvents: 'none',
@@ -152,12 +180,14 @@ const genSegmentedStyle: GenerateStyle<SegmentedToken> = (token: SegmentedToken)
         [`&:hover:not(${componentCls}-item-selected):not(${componentCls}-item-disabled)`]: {
           color: token.itemHoverColor,
           '&::after': {
+            opacity: 1,
             backgroundColor: token.itemHoverBg,
           },
         },
         [`&:active:not(${componentCls}-item-selected):not(${componentCls}-item-disabled)`]: {
           color: token.itemHoverColor,
           '&::after': {
+            opacity: 1,
             backgroundColor: token.itemActiveBg,
           },
         },
@@ -196,6 +226,7 @@ const genSegmentedStyle: GenerateStyle<SegmentedToken> = (token: SegmentedToken)
         height: '100%',
         padding: `${unit(token.paddingXXS)} 0`,
         borderRadius: token.borderRadiusSM,
+        transition: `transform ${token.motionDurationSlow} ${token.motionEaseInOut}, height ${token.motionDurationSlow} ${token.motionEaseInOut}`,
 
         [`& ~ ${componentCls}-item:not(${componentCls}-item-selected):not(${componentCls}-item-disabled)::after`]:
           {
@@ -238,14 +269,31 @@ const genSegmentedStyle: GenerateStyle<SegmentedToken> = (token: SegmentedToken)
         transition: `transform ${token.motionDurationSlow} ${token.motionEaseInOut}, width ${token.motionDurationSlow} ${token.motionEaseInOut}`,
         willChange: 'transform, width',
       },
+
+      [`&${componentCls}-shape-round`]: {
+        borderRadius: 9999,
+        [`${componentCls}-item, ${componentCls}-thumb`]: {
+          borderRadius: 9999,
+        },
+      },
     },
   };
 };
 
 // ============================== Export ==============================
 export const prepareComponentToken: GetDefaultToken<'Segmented'> = (token) => {
-  const { colorTextLabel, colorText, colorFillSecondary, colorBgElevated, colorFill } = token;
+  const {
+    colorTextLabel,
+    colorText,
+    colorFillSecondary,
+    colorBgElevated,
+    colorFill,
+    lineWidthBold,
+    colorBgLayout,
+  } = token;
   return {
+    trackPadding: lineWidthBold,
+    trackBg: colorBgLayout,
     itemColor: colorTextLabel,
     itemHoverColor: colorText,
     itemHoverBg: colorFillSecondary,
@@ -258,11 +306,8 @@ export const prepareComponentToken: GetDefaultToken<'Segmented'> = (token) => {
 export default genStyleHooks(
   'Segmented',
   (token) => {
-    const { lineWidth, lineWidthBold, colorBgLayout, calc } = token;
-
+    const { lineWidth, calc } = token;
     const segmentedToken = mergeToken<SegmentedToken>(token, {
-      segmentedPadding: lineWidthBold,
-      segmentedBgColor: colorBgLayout,
       segmentedPaddingHorizontal: calc(token.controlPaddingHorizontal).sub(lineWidth).equal(),
       segmentedPaddingHorizontalSM: calc(token.controlPaddingHorizontalSM).sub(lineWidth).equal(),
     });
